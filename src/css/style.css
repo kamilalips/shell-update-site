@@ -2852,7 +2852,9 @@ body {
     .keycard_shell__start-update-text-container { margin-top: -96px; }
 }
 
-/* ==== One typeface for the whole site: titles in bold, as on keycard.tech ==== */
+.keycard_shell__btn-container.keycard_shell__step-action-el { height: auto; }
+.keycard_shell__btn-container.keycard_shell__step-action-el > .keycard_shell__btn { height: 40px; }
+
 .keycard_shell__h2, .keycard_shell__h3, .keycard_shell__page-heading, .keycard_shell__ag_update_step-heading,
 .keycard_shell__fw-version-content, .keycard_shell__db-version-heading { font-weight: 700; letter-spacing: -0.03em; }
 .keycard_shell__mobile-menu-element-link, .keycard-shell__mobile_submenu-element-link { font-weight: 600; letter-spacing: -0.02em; }

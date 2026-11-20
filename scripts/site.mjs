@@ -28,6 +28,7 @@ export const URLS = {
   "db:db-version-history": "update/db-version-history",
   "firmware:release-notes": "firmware/release-notes",
   "device:verify-index": "verify/",
+  "device:air-gapped-verify": "verify/air-gapped",
 };
 
 export const PAGES = [
@@ -37,6 +38,7 @@ export const PAGES = [
   { template: "db_version_history.html", path: "update/db-version-history/index.html" },
   { template: "fw_release_notes.html", path: "firmware/release-notes/index.html" },
   { template: "verify.html", path: "verify/index.html" },
+  { template: "air_gapped_verify.html", path: "verify/air-gapped/index.html" },
 ];
 
 export const MEDIA = "media/";

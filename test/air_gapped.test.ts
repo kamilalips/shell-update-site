@@ -1,44 +1,83 @@
+// Both air-gapped pages wire every download button at runtime, so these read the templates and the scripts instead of running them
+
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import { test } from "node:test";
-import { UPDATER } from "../scripts/site.mjs";
+import { PAGES, UPDATER, URLS } from "../scripts/site.mjs";
 
-const PAGE = readFileSync(new URL("../templates/air_gapped_update.html", import.meta.url), "utf8");
-const SCRIPT = readFileSync(new URL("../src/js/air_gapped.ts", import.meta.url), "utf8");
 const CSS = readFileSync(new URL("../src/css/style.css", import.meta.url), "utf8");
+const VERIFY = readFileSync(new URL("../templates/verify.html", import.meta.url), "utf8");
+const HELPER = readFileSync(new URL("../src/js/updater_download.ts", import.meta.url), "utf8");
 
-const idsInPage = new Set([...PAGE.matchAll(/id="([^"]+)"/g)].map((match) => match[1]));
-const idsWanted = [...SCRIPT.matchAll(/getElementById\((?:"|')([\w-]+)(?:"|')\)/g)].map((match) => match[1]);
+const pages = [
+  { name: "update", template: "air_gapped_update.html", script: "air_gapped.ts", shots: 3 },
+  { name: "verify", template: "air_gapped_verify.html", script: "air_gapped_verify.ts", shots: 1 },
+];
 
-test("every element the page reaches for is in the markup", () => {
-  const missing = [...new Set(idsWanted)].filter((id) => !idsInPage.has(id));
+const read = (file: string) => readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
 
-  assert.deepEqual(missing, [], `no markup for ${missing.join(", ")}`);
-  assert.ok(idsWanted.length > 10, "the page reaches for a lot of elements; finding few means the grep broke");
-});
+for (const page of pages) {
+  const markup = read(`templates/${page.template}`);
+  const script = read(`src/js/${page.script}`);
 
-test("nothing names an installer or a release download path", () => {
-  assert.ok(!/releases?\/(latest\/)?download\//.test(PAGE + SCRIPT), "a release download path is hard-coded");
-  assert.ok(!/\.AppImage|\.dmg|\.msi|\.exe|keycard-shell-updater-/.test(PAGE + SCRIPT), "an installer file name is hard-coded");
-});
+  test(`every element the ${page.name} page reaches for is in its markup`, () => {
+    const ids = new Set([...markup.matchAll(/id="([^"]+)"/g)].map((match) => match[1]));
+    const wanted = [...script.matchAll(/getElementById\((?:"|')([\w-]+)(?:"|')\)/g)].map((match) => match[1]);
+    const missing = [...new Set(wanted)].filter((id) => !ids.has(id));
 
-test("the operating systems the markup offers are the ones the sync looks for installers for", () => {
-  const [, osSelect] = PAGE.match(/<select name="op-system"[^>]*>([\s\S]*?)<\/select>/) ?? [];
+    assert.deepEqual(missing, [], `no markup for ${missing.join(", ")}`);
+    assert.ok(wanted.length > 3, "finding almost nothing means the grep broke");
+  });
 
-  assert.ok(osSelect !== undefined, "the page has no op-system select");
-  assert.deepEqual(
-    [...osSelect.matchAll(/value="([^"]+)">([^<]*)</g)].map(([, id, label]) => ({ id, label })),
-    UPDATER.platforms.map(({ id, label }) => ({ id, label })),
-  );
-  assert.match(SCRIPT, /replaceChildren\(\.\.\.updaterContext\.platforms\.map/);
-});
+  // The updater renamed every asset between v1.0.0 and v2.0.0 and the hard-coded links 404ed; get-updater.json is what names an installer now
+  test(`the ${page.name} page names no installer and no release download path`, () => {
+    assert.ok(!/releases?\/(latest\/)?download\//.test(markup + script), "a release download path is hard-coded");
+    assert.ok(!/\.AppImage|\.dmg|\.msi|\.exe|keycard-shell-updater-/.test(markup + script), "an installer file name is hard-coded");
+    assert.match(script, /wireUpdaterDownload\(/);
+  });
 
-test("the button is fed by the document, and the release page stays the fallback", () => {
-  const [button] = PAGE.match(/<a [^>]*id="download-app-btn"[^>]*>/) ?? [];
+  // The markup is what a visitor without JavaScript sees, and what the page replaces comes from UPDATER
+  test(`the ${page.name} page offers the operating systems the sync looks for installers for`, () => {
+    const [, osSelect] = markup.match(/<select name="op-system"[^>]*>([\s\S]*?)<\/select>/) ?? [];
 
-  assert.ok(button?.includes("https://github.com/keycard-tech/kshell-updater/releases/latest"), "the button no longer falls back to the release page");
-  assert.match(SCRIPT, /appDownloadBtn\.href = platform\.url/);
-  assert.match(SCRIPT, /get-updater\.json/);
+    assert.ok(osSelect !== undefined, "the page has no op-system select");
+    assert.deepEqual(
+      [...osSelect.matchAll(/value="([^"]+)">([^<]*)</g)].map(([, id, label]) => ({ id, label })),
+      UPDATER.platforms.map(({ id, label }) => ({ id, label })),
+    );
+  });
+
+  test(`the ${page.name} page falls back to the release page and takes the installer from the document`, () => {
+    const [button] = markup.match(/<a [^>]*id="download-app-btn"[^>]*>/) ?? [];
+
+    assert.ok(button?.includes("https://github.com/keycard-tech/kshell-updater/releases/latest"), "the button no longer falls back to the release page");
+    assert.equal([...markup.matchAll(/get-updater\.json/g)].length, 0, "a page fetches the updater document itself; updater_download.ts is the one that does");
+  });
+
+  test(`the ${page.name} page shows ${page.shots} screenshots of the updater, each referenced once`, () => {
+    const shots = [...markup.matchAll(/keycard_shell\/img\/(updater_[\w-]+\.webp)/g)].map((match) => match[1]);
+
+    assert.equal(shots.length, page.shots, `${shots.length} screenshots, expected ${page.shots}`);
+
+    for (const name of shots) {
+      // Parcel turns a second reference from an <a href> into a dead one, so a shot is shown and never linked
+      assert.equal(shots.filter((each) => each === name).length, 1, `${name} is referenced more than once`);
+      assert.ok(existsSync(new URL(`../src/img/${name}`, import.meta.url)), `src/img/${name} is missing`);
+    }
+  });
+
+  test(`every class the ${page.name} page uses is in the stylesheet`, () => {
+    const used = new Set([...markup.matchAll(/class="([^"]+)"/g)].flatMap((match) => match[1].split(/\s+/)).filter(Boolean));
+    const missing = [...used].filter((name) => !CSS.includes(`.${name}`));
+
+    assert.deepEqual(missing, [], `${missing.join(", ")} used but never styled`);
+  });
+}
+
+test("one module hands out the installer to both pages", () => {
+  assert.equal([...HELPER.matchAll(/get-updater\.json/g)].length, 1);
+  assert.match(HELPER, /replaceChildren\(\.\.\.context\.platforms\.map/);
+  assert.match(HELPER, /button\.removeAttribute\("target"\)/);
 });
 
 test("the installer patterns cover the names of both naming schemes", () => {
@@ -50,21 +89,19 @@ test("the installer patterns cover the names of both naming schemes", () => {
   assert.ok(offeredTo("linux", ["Keycard.Shell.Updater_2.1.0_amd64.AppImage", "keycard-shell-updater-lnx.AppImage"]));
 });
 
-test("each screenshot of the updater is one reference to a shipped file", () => {
-  const shots = [...PAGE.matchAll(/keycard_shell\/img\/(updater_[\w-]+\.webp)/g)].map((match) => match[1]);
+// The browser check needs a camera and an online machine; the app needs neither, so the choice goes under its Continue button
+test("the verify page offers the air-gapped verification under its Continue button", () => {
+  const page = PAGES.find((each) => each.template === "air_gapped_verify.html");
+  const want = page?.path.replace(/index\.html$/, "").replace(/\/$/, "");
+  const url = Object.entries(URLS).find(([, path]) => path === want)?.[0];
+  const [step] = VERIFY.match(/id="kpro_web__verify-step1"[\s\S]*?id="kpro_web__verify-step2"/) ?? [];
 
-  assert.equal(shots.length, 3, `${shots.length} screenshots of the updater, expected 3`);
+  assert.ok(url !== undefined, "verify/air-gapped is in PAGES under no URL name");
+  assert.ok(step !== undefined, "the verify page has no first step to read");
 
-  for (const name of shots) {
-    // Parcel turns a second reference from an <a href> into a dead one, so a shot is shown and never linked
-    assert.equal(shots.filter((each) => each === name).length, 1, `${name} is referenced more than once`);
-    assert.ok(existsSync(new URL(`../src/img/${name}`, import.meta.url)), `src/img/${name} is missing`);
-  }
-});
+  const [button, link] = [step.indexOf('value="Continue"'), step.indexOf(`href="{% url '${url}' %}"`)];
 
-test("every class the page uses is in the stylesheet", () => {
-  const used = new Set([...PAGE.matchAll(/class="([^"]+)"/g)].flatMap((match) => match[1].split(/\s+/)).filter(Boolean));
-  const missing = [...used].filter((name) => !CSS.includes(`.${name}`));
-
-  assert.deepEqual(missing, [], `${missing.join(", ")} used but never styled`);
+  assert.ok(button >= 0, "the first step has no Continue button");
+  assert.ok(link > button, "the air-gapped verification link is not under the Continue button");
+  assert.match(step.slice(button, link), /keycard_shell_or/, "nothing tells the visitor these are two separate ways to verify");
 });

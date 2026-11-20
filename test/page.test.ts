@@ -46,10 +46,15 @@ test("the challenge is shown blurred until the allowlist has authenticated", () 
   assert.match(CSS, /\.keycard_shell__qr-blurred\s*\{[^}]*filter:\s*blur/);
 });
 
-// Blurred and labelled is only worth anything if nobody can get past it meanwhile
-test("there is nothing to click until the allowlist is verified", () => {
+
+// Blurred and labelled is only worth anything if nobody can get past it meanwhile. The one thing beside the disabled
+// button that can be clicked leaves for the air-gapped page; it does not continue here
+test("there is nothing to click past the blur until the allowlist is verified", () => {
+  const [step] = PAGE.match(/id="kpro_web__verify-step1"[\s\S]*?id="kpro_web__verify-step2"/) ?? [];
+
   assert.match(PAGE, /id="device_verify__next-button"[^>]*disabled|disabled[^>]*id="device_verify__next-button"/);
   assert.match(SCRIPT, /if \(allowlist === null\) return;/);
+  assert.equal([...(step ?? "").matchAll(/<a /g)].length, 1, "a second link appeared next to the blur");
 });
 
 // The page must not reach past its document for a file: the document is what the sync certifies
@@ -82,6 +87,19 @@ test("every class the page uses is in the stylesheet", () => {
   const missing = [...used].filter((name) => !CSS.includes(`.${name}`));
 
   assert.deepEqual(missing, [], `${missing.join(", ")} used but never styled`);
+});
+
+// .keycard_shell__btn-container is one button tall, and the block under Continue is a button, an "or" and a link: without
+// this the last two are painted past the container and the step never makes room for them. A grown block leaves a
+// height:100% button with nothing to resolve against, so the height the 48px box used to give it has to come back
+test("the block that carries the air-gapped link is allowed to grow, and its button keeps its height", () => {
+  const [block] = CSS.match(/\.keycard_shell__btn-container\.keycard_shell__step-action-el\s*{[^}]*}/) ?? [];
+  const [button] = CSS.match(/\.keycard_shell__btn-container\.keycard_shell__step-action-el > \.keycard_shell__btn\s*{[^}]*}/) ?? [];
+
+  assert.ok(block !== undefined, "no rule for the verify page's button block");
+  assert.match(block, /height:\s*auto/);
+  assert.ok(button !== undefined, "nothing pins the button's height once the block grows");
+  assert.match(button, /height:\s*4\dpx/);
 });
 
 // .keycard_shell__display-none is a plain display:none mid-stylesheet, so any later rule giving the same element a display of its own needs a compound rule to be hidden at all

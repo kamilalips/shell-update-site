@@ -24,3 +24,7 @@ changed. The page fetches the signed list of produced devices and authenticates 
 
 The three answers are separate: the key is on the produced units list, the response is correctly signed but no
 entry matches it, and the response could not be checked at all.
+
+[Air-gapped verification](https://shell.keycard.tech/verify/air-gapped) hands the same
+check to the stand-alone app on a machine that never connects: this page gives out the app and the newest
+produced units list.
