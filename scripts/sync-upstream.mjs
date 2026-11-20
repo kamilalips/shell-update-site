@@ -5,7 +5,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { DB_FORMAT, DB_MAGIC, databaseFormat, databaseMagic, databaseVersion, firmwareVersion, flashImage, readUnits, sha256, unitsHeader } from "./binfmt.mjs";
 import { SIG_SIZE } from "../src/js/shvr/format.ts";
-import { ARTIFACTS, UNITS_VERIFY_KEY } from "./site.mjs";
+import { ARTIFACTS, UNITS_VERIFY_KEY, UPDATER } from "./site.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -79,6 +79,9 @@ const RELEASES = {
 
       return { rows: rowCount, salt };
     },
+  },
+  updater: {
+    repo: "keycard-tech/kshell-updater",
   },
 };
 
@@ -399,10 +402,50 @@ async function syncUnits(previous) {
   };
 }
 
+const installerFor = (platform, release) =>
+  platform.patterns
+    .map((pattern) => (release.assets ?? []).find((asset) => pattern.test(asset.name)))
+    .find((asset) => asset !== undefined);
+
+async function syncUpdater() {
+  const skipped = [];
+
+  for (const release of await releases("updater")) {
+    const platforms = UPDATER.platforms.flatMap((platform) => {
+      const asset = installerFor(platform, release);
+
+      return asset === undefined ? [] : [{ id: platform.id, label: platform.label, asset: asset.name, url: asset.browser_download_url }];
+    });
+
+    if (platforms.length === 0) {
+      console.warn(`${release.tag_name}: no installer asset, not offered`);
+      skipped.push({ kind: "updater", tag: release.tag_name, reason: "no installer asset" });
+      continue;
+    }
+
+    const current = { version: versionOf(release.tag_name), tag: release.tag_name, release: release.html_url, platforms };
+
+    await writeJson(UPDATER.document, { version: current.version, platforms });
+
+    return { current, skipped };
+  }
+
+  const carried = await readFile(join(MIRROR, UPDATER.document), "utf8").then(JSON.parse).catch(() => null);
+
+  if (carried === null) throw new Error(`no release of ${RELEASES.updater.repo} offers an installer and ${UPDATER.document} mirrors none`);
+
+  await writeJson(UPDATER.document, carried);
+
+  const reason = skipped.length > 0 ? `${RELEASES.updater.repo} published no installer to mirror` : `${RELEASES.updater.repo} has published no release`;
+
+  return { current: carried, skipped: [...skipped, { kind: "updater", tag: carried.version, reason }], kept: reason };
+}
+
 async function rebuild(previous) {
   const firmware = await syncFirmware();
   const database = await syncDatabase();
   const units = await syncUnits(previous);
+  const updater = await syncUpdater();
   const db = database.current.variants[0];
 
   // The documents name the artifacts, so they are written once every image is downloaded and verified
@@ -415,7 +458,8 @@ async function rebuild(previous) {
     firmware: firmware.current,
     database: database.current,
     units: units.current,
-    incomplete: [...firmware.skipped, ...database.skipped, ...units.skipped],
+    updater: updater.current,
+    incomplete: [...firmware.skipped, ...database.skipped, ...units.skipped, ...updater.skipped],
   });
 
   // The old mirror moves aside rather than being deleted first, so there is never a moment with no mirror
@@ -432,7 +476,7 @@ async function rebuild(previous) {
     console.log(`${kind}: ${current.version}${before && before !== current.version ? ` (was ${before})` : ""} ${current.variants.map((image) => `${image.file} ${image.hash}`).join(" ")}`);
   }
 
-  for (const { kind, tag, reason } of [...firmware.skipped, ...database.skipped, ...units.skipped]) {
+  for (const { kind, tag, reason } of [...firmware.skipped, ...database.skipped, ...units.skipped, ...updater.skipped]) {
     console.warn(`${kind}: ${tag} was not mirrored (${reason})`);
   }
 
@@ -446,6 +490,10 @@ async function rebuild(previous) {
 
     console.log(`units: ${current.version} ${file} ${hash}${detail}${kept ? `, kept: ${kept}` : ""}`);
   }
+
+  const app = updater.current;
+
+  console.log(`updater: ${app.version} ${app.platforms.map(({ id, asset }) => `${id} ${asset}`).join(" ")}${updater.kept ? `, kept: ${updater.kept}` : ""}`);
 }
 
 // What a page needs about one mirrored image: where it is, what it hashes to, and the fwVariant code of the device that runs it

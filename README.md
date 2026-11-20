@@ -10,7 +10,9 @@ lets you choose between the firmware and the token database. Firmware comes as a
 build.
 
 The [air-gapped update](https://shell.keycard.tech/update/air-gapped) offers the same files with the
-checksum of each, for updating in air-gapped mode. Earlier releases are listed under
+checksum of each, for updating in air-gapped mode, together with the newest release of the
+[stand-alone updater app](https://github.com/keycard-tech/kshell-updater) built for the operating system you
+pick. Earlier releases are listed under
 [release notes](https://shell.keycard.tech/firmware/release-notes) and
 [database version history](https://shell.keycard.tech/update/db-version-history).
 

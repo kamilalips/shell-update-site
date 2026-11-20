@@ -41,6 +41,15 @@ export const PAGES = [
 
 export const MEDIA = "media/";
 
+export const UPDATER = {
+  document: "get-updater.json",
+  platforms: [
+    { id: "windows", label: "Windows", patterns: [/x64-setup\.exe$/, /\.exe$/, /\.msi$/] },
+    { id: "mac", label: "macOS", patterns: [/universal\.dmg$/, /\.dmg$/, /\.zip$/] },
+    { id: "linux", label: "Linux", patterns: [/amd64\.AppImage$/, /\.AppImage$/, /\.deb$/] },
+  ],
+};
+
 // The mirror the pages read: the artifacts under names that never change, and the documents that name them
 export const ARTIFACTS = {
   firmware: "firmware.bin",
@@ -48,7 +57,7 @@ export const ARTIFACTS = {
   database: "db.bin",
   units: "units.bin",
 };
-export const DOCUMENTS = ["get-firmware.json", "get-db.json", "get-units.json", "get-firmwares.json", "get-dbs.json", "sync.json"];
+export const DOCUMENTS = ["get-firmware.json", "get-db.json", "get-units.json", "get-firmwares.json", "get-dbs.json", UPDATER.document, "sync.json"];
 
 // The pinned key the allowlist signature is checked against, never inferred from where the file was downloaded from
 export const UNITS_VERIFY_KEY = JSON.parse(readFileSync(new URL("../trust.json", import.meta.url))).unitsVerifyKey;

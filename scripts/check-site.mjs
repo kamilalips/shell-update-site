@@ -3,7 +3,7 @@
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { DB_MAGIC, databaseMagic, databaseVersion, firmwareVersion, readUnits, sha256 } from "./binfmt.mjs";
-import { ARTIFACTS, PAGES, URLS, PAGE_DOCUMENTS, UNITS_VERIFY_KEY, artifactsOf, at, baseProblem, linkOf, prefix } from "./site.mjs";
+import { ARTIFACTS, MEDIA, PAGES, URLS, PAGE_DOCUMENTS, UNITS_VERIFY_KEY, UPDATER, artifactsOf, at, baseProblem, linkOf, prefix } from "./site.mjs";
 import { listen } from "./serve-site.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -120,6 +120,23 @@ for (const { kind, document } of PAGE_DOCUMENTS) {
 
   if (read === undefined) fail(document, "never fetched by any page");
   else await checkChain(document, kind, read.at, read);
+}
+
+const installers = await get(`${origin}${at(MEDIA)}${UPDATER.document}`);
+
+if (installers.status !== 200) fail(UPDATER.document, `${installers.status} at ${UPDATER.document}`);
+else {
+  const { version, platforms } = JSON.parse(Buffer.from(await installers.body()).toString());
+  const answers = await Promise.all(platforms.map(({ url }) => fetch(url, { method: "HEAD", redirect: "follow" })));
+
+  for (const [index, { id, asset }] of platforms.entries()) {
+    if (!UPDATER.platforms.some((each) => each.id === id)) fail(UPDATER.document, `${asset} is offered for "${id}", which is no operating system of the page`);
+    if (!answers[index].ok) fail(UPDATER.document, `${asset} answers ${answers[index].status}`);
+  }
+
+  const absent = UPDATER.platforms.filter(({ id }) => !platforms.some((each) => each.id === id)).map(({ id }) => id);
+
+  console.log(`updater ${version}: ${platforms.map(({ id, asset }) => `${id} ${asset}`).join(" ")}${absent.length > 0 ? `, ${absent.join(", ")} has no installer` : ""}`);
 }
 
 await close();

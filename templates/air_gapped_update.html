@@ -18,7 +18,7 @@
     <div class="keycard_shell__ag_update_step">
         <div class="keycard_shell__ag_update_step-head-container">
             <h3 class="keycard_shell__ag_update_step-heading">1.&nbsp; Download stand-alone Shell updater app</h3>
-            <span class="keycard_shell__ag_update_step-description">The standalone updater app allows you to update your Shell without using internet or a web-browser. You can find it on its <a href="https://github.com/keycard-tech/kshell-updater/releases/" class="keycard_shell__page-top-help-link" target="_blank">GitHub repository</a>, or find the latest version below.</span>
+            <span class="keycard_shell__ag_update_step-description">The standalone updater app allows you to update your Shell without using internet or a web-browser. Pick the operating system of the offline machine and the button below downloads the latest release built for it from the app's <a href="https://github.com/keycard-tech/kshell-updater/releases/" class="keycard_shell__page-top-help-link" target="_blank">GitHub repository</a>.</span>
         </div>
         <div class="keycard_shell__select-app">
             <label for="op-system-selector" class="keycard_shell__checkbox-field-top-label">Select OS</label>
@@ -33,7 +33,7 @@
         <div class="keycard_shell__btn-container keycard_shell__btn-ag-container">
             <a href="https://github.com/keycard-tech/kshell-updater/releases/latest" class="keycard_shell__btn keycard_shell__btn-ag" id="download-app-btn" target="_blank">
                 <img src="{% static 'keycard_shell/img/download.svg' %}" alt="Download" width="20px" height="20px">
-                <span>Download Shell Updater</span>
+                <span id="download-app-label">Download Shell Updater</span>
             </a>
         </div>
         <div class="keycard_shell__btn-container keycard_shell__ag_changelog-container">
@@ -43,6 +43,10 @@
             </a>
         </div>
         <div class="keycard_shell__ag_hash_check_container">
+            <div class="keycard_shell__ag_hash_container">
+                <span class="keycard_shell__ag_hash_check_text keycard_shell__ag_hash-label">•&nbsp; File:</span>
+                <span class="keycard_shell__ag_hash" id="app-asset"></span>
+            </div>
             <span class="keycard_shell__ag_hash_check_text">
                 Check the updater's SHA256 checksum <a href="https://github.com/keycard-tech/kshell-updater/releases/latest" class="keycard_shell__page-top-help-link" target="_blank">here</a>. You can for instance use shasum -a 256 to validate the file you downloaded. <br>
                 Copy the updater app to a freshly formatted USB stick. To avoid hidden malware, always format the USB drive before transferring files.
@@ -127,10 +131,25 @@
             <h3 class="keycard_shell__ag_update_step-heading">5.&nbsp; Run standalone updater and follow instructions</h3>
             <span class="keycard_shell__ag_update_step-description">
                 Boot your offline machine, plug in the USB, and launch the updater. <br>
-                Follow on-screen steps to update firmware and database. <br>
-                Shell now runs the latest software without ever touching an internet-connected OS.
+                Follow on-screen steps to update firmware and database.
             </span>
         </div>
+        <!-- Parcel turns an <a href> to a bundled image into a dead reference, so the shots are shown as they are -->
+        <div class="keycard_shell__ag_shots">
+            <figure class="keycard_shell__ag_shot">
+                <img class="keycard_shell__ag_shot-img" src="{% static 'keycard_shell/img/updater_connect.webp' %}" alt="The updater app with a Shell connected, showing the firmware and database versions installed on it" width="1929" height="768" loading="lazy">
+                <figcaption class="keycard_shell__ag_shot-caption">The updater finds the Shell over USB and names the firmware and the database it is already running.</figcaption>
+            </figure>
+            <figure class="keycard_shell__ag_shot">
+                <img class="keycard_shell__ag_shot-img" src="{% static 'keycard_shell/img/updater_files.webp' %}" alt="The updater with both rows set to From file, the firmware build selected and the database taken from db.bin on the USB drive" width="1929" height="1190" loading="lazy">
+                <figcaption class="keycard_shell__ag_shot-caption">Set both rows to "From file" and pick the two files off the USB drive. Each is checked against the sha256 its release publishes before anything is written, and the file name of each appears beside its row.</figcaption>
+            </figure>
+            <figure class="keycard_shell__ag_shot keycard_shell__ag_shot-transfer">
+                <img class="keycard_shell__ag_shot-img" src="{% static 'keycard_shell/img/updater_transfer.webp' %}" alt="The updater transferring the firmware, with the database queued behind it" width="1280" height="960" loading="lazy">
+                <figcaption class="keycard_shell__ag_shot-caption">Transfer, then approve the update on the Shell's own screen. When both are selected the database is written in a second pass, after the firmware.</figcaption>
+            </figure>
+        </div>
+        <span class="keycard_shell__ag_update_step-description">Your Shell now runs the latest software without ever touching an internet-connected OS.</span>
     </div>
 </div>
 <script type="module" src="{% static '/keycard_shell/js/air_gapped.js' %}"></script>
