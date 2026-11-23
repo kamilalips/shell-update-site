@@ -1638,6 +1638,14 @@ body {
     gap: 24px;
 }
 
+.keycard_shell__ag_hash_container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px;
+}
+
 .keycard_shell__ag_hash-label {
     padding-left: 5px;
     box-sizing: border-box;
@@ -1663,6 +1671,43 @@ body {
 
 .keycard_shell__ag-list-element {
     display: list-item; 
+}
+
+.keycard_shell__ag_shots {
+    width: 100%;
+    max-width: 1040px;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    gap: 40px;
+}
+
+.keycard_shell__ag_shot {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.keycard_shell__ag_shot-transfer .keycard_shell__ag_shot-img {
+    width: 66%;
+    margin-inline: auto;
+}
+
+.keycard_shell__ag_shot-img {
+    width: 100%;
+    height: auto;
+    box-sizing: border-box;
+}
+
+.keycard_shell__ag_shot-caption {
+    font-family: var(--text-font-inter);
+    font-size: var(--text-14);
+    line-height: var(--text-line-height);
+    color: var(--white-60);
+    font-weight: var(--text-font-weight);
+    letter-spacing: var(--text-letter-spacing);
 }
 
 /* Bottom content */
@@ -2614,6 +2659,10 @@ body {
         line-break: anywhere;
         margin-top: 5px;
     }
+
+    .keycard_shell__ag_shot-transfer .keycard_shell__ag_shot-img {
+        width: 100%;
+    }
 }
 
 @media screen and (min-width: 280px) and (max-width: 389px) {
@@ -2803,7 +2852,9 @@ body {
     .keycard_shell__start-update-text-container { margin-top: -96px; }
 }
 
-/* ==== One typeface for the whole site: titles in bold, as on keycard.tech ==== */
+.keycard_shell__btn-container.keycard_shell__step-action-el { height: auto; }
+.keycard_shell__btn-container.keycard_shell__step-action-el > .keycard_shell__btn { height: 40px; }
+
 .keycard_shell__h2, .keycard_shell__h3, .keycard_shell__page-heading, .keycard_shell__ag_update_step-heading,
 .keycard_shell__fw-version-content, .keycard_shell__db-version-heading { font-weight: 700; letter-spacing: -0.03em; }
 .keycard_shell__mobile-menu-element-link, .keycard-shell__mobile_submenu-element-link { font-weight: 600; letter-spacing: -0.02em; }

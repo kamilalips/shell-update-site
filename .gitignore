@@ -10,3 +10,6 @@ pages/
 
 # maintainer notes, not part of the published site
 docs/*.md
+
+# screenshots for review, taken from dist/ (see docs/building.md)
+shots/

@@ -10,7 +10,9 @@ lets you choose between the firmware and the token database. Firmware comes as a
 build.
 
 The [air-gapped update](https://shell.keycard.tech/update/air-gapped) offers the same files with the
-checksum of each, for updating in air-gapped mode. Earlier releases are listed under
+checksum of each, for updating in air-gapped mode, together with the newest release of the
+[stand-alone updater app](https://github.com/keycard-tech/kshell-updater) built for the operating system you
+pick. Earlier releases are listed under
 [release notes](https://shell.keycard.tech/firmware/release-notes) and
 [database version history](https://shell.keycard.tech/update/db-version-history).
 
@@ -22,3 +24,7 @@ changed. The page fetches the signed list of produced devices and authenticates 
 
 The three answers are separate: the key is on the produced units list, the response is correctly signed but no
 entry matches it, and the response could not be checked at all.
+
+[Air-gapped verification](https://shell.keycard.tech/verify/air-gapped) hands the same
+check to the stand-alone app on a machine that never connects: this page gives out the app and the newest
+produced units list.

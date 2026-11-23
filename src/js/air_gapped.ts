@@ -1,6 +1,14 @@
 import { UIUtils } from "./ui_utils";
+import { wireUpdaterDownload } from "./updater_download";
 
 const mediaPrefix = document.getElementById('update__media-prefix') as HTMLInputElement;
+
+const appElements = {
+    selector: document.getElementById("op-system-selector") as HTMLSelectElement,
+    button: document.getElementById("download-app-btn") as HTMLAnchorElement,
+    label: document.getElementById("download-app-label") as HTMLSpanElement,
+    asset: document.getElementById("app-asset") as HTMLSpanElement,
+};
 
 const fwVariants = document.getElementById("fw-variant-selector") as HTMLSelectElement;
 const fwDownloadBtn = document.getElementById("download-fw") as HTMLAnchorElement;
@@ -24,6 +32,8 @@ function showFirmware() : void {
 }
 
 async function handleAirGappedUpdate() : Promise<void> {
+    await wireUpdaterDownload(mediaPrefix.value, appElements);
+
     firmwareContext = await fetch(mediaPrefix.value + "get-firmware.json").then((r: any) => r.json());
     const dbContext = await fetch(mediaPrefix.value + "get-db.json").then((r: any) => r.json());
 

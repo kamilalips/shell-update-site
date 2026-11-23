@@ -53,6 +53,12 @@ export namespace UIUtils {
   export interface FirmwareVariant { id: string; label: string; device: number; path: string; hash: string }
   export interface FirmwareContext { version: string; variants: FirmwareVariant[] }
 
+  export interface UpdaterPlatform { id: string; label: string; asset: string; url: string }
+  export interface UpdaterContext { version: string; platforms: UpdaterPlatform[] }
+
+  export interface UnitsVariant { id: string; path: string; hash: string }
+  export interface UnitsContext { version: string; variants: UnitsVariant[] }
+
   export function firmwareTitle(context: FirmwareContext, variant: FirmwareVariant) : string {
     return `${context.version}-${variant.label}`;
   }

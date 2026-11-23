@@ -1,0 +1,116 @@
+{% extends './base.html' %}
+{% load static %}
+{% block title %}Air-gapped Verification{% endblock title %}
+{% block content %}
+<input type="hidden" id="verify__media-prefix" name="verify__media-prefix" value="{% get_media_prefix %}">
+<div class="keycard_shell__page-heading-container">
+    <h1 class="keycard_shell__page-heading">Verify authenticity of Shell in air gapped mode</h1>
+</div> 
+<div class="keycard_shell__page-top-container">
+    <div class="keycard_shell__page-top-text-container">
+        <span class="keycard_shell__page-top-text">Air-gapped verification needs no server and no network, only the list of produced devices has to be downloaded in advance.<br>
+            <br/>
+            This page helps you download the updater app and the latest produced units list for an offline verification of your Keycard Shell.
+    </div>
+</div>
+<div class="keycard_shell__ag_update_steps">
+    <div class="keycard_shell__ag_update_step">
+        <div class="keycard_shell__ag_update_step-head-container">
+            <h3 class="keycard_shell__ag_update_step-heading">1.&nbsp; Download stand-alone Shell updater app</h3>
+            <span class="keycard_shell__ag_update_step-description">The standalone updater app verifies your Shell without using internet or a web-browser. Pick the operating system of the offline machine and the button below downloads the latest release built for it from the app's <a href="https://github.com/keycard-tech/kshell-updater/releases/" class="keycard_shell__page-top-help-link" target="_blank">GitHub repository</a>.</span>
+        </div>
+        <div class="keycard_shell__select-app">
+            <label for="op-system-selector" class="keycard_shell__checkbox-field-top-label">Select OS</label>
+            <div class="keycard_shell__select-field-container">
+                <select name="op-system" id="op-system-selector" class="keycard_shell__select-field">
+                    <option class="keycard_shell__select_option"  value="windows">Windows</option>
+                    <option class="keycard_shell__select_option" value="mac">macOS</option>
+                    <option class="keycard_shell__select_option" value="linux">Linux</option>
+                </select>
+            </div>
+        </div>
+        <div class="keycard_shell__btn-container keycard_shell__btn-ag-container">
+            <a href="https://github.com/keycard-tech/kshell-updater/releases/latest" class="keycard_shell__btn keycard_shell__btn-ag" id="download-app-btn" target="_blank">
+                <img src="{% static 'keycard_shell/img/download.svg' %}" alt="Download" width="20px" height="20px">
+                <span id="download-app-label">Download Shell Updater</span>
+            </a>
+        </div>
+        <div class="keycard_shell__btn-container keycard_shell__ag_changelog-container">
+            <a href="https://github.com/keycard-tech/kshell-updater/releases" class="keycard_shell__btn keycard_shell__ag_changelog" id="app-changelog" >
+                <img src="{% static 'keycard_shell/img/changelog.svg' %}" alt="Changelog" width="20px" height="20px">
+                <span>View changelog</span>
+            </a>
+        </div>
+        <div class="keycard_shell__ag_hash_check_container">
+            <div class="keycard_shell__ag_hash_container">
+                <span class="keycard_shell__ag_hash_check_text keycard_shell__ag_hash-label">•&nbsp; File:</span>
+                <span class="keycard_shell__ag_hash" id="app-asset"></span>
+            </div>
+            <span class="keycard_shell__ag_hash_check_text">
+                Check the updater's SHA256 checksum <a href="https://github.com/keycard-tech/kshell-updater/releases/latest" class="keycard_shell__page-top-help-link" target="_blank">here</a>. You can for instance use shasum -a 256 to validate the file you downloaded. <br>
+                Copy the updater app to a freshly formatted USB stick. To avoid hidden malware, always format the USB drive before transferring files.
+            </span>
+        </div>
+    </div>
+    <div class="keycard_shell__ag_update_step">
+        <div class="keycard_shell__ag_update_step-head-container">
+            <h3 class="keycard_shell__ag_update_step-heading">2.&nbsp; Download produced units list</h3>
+            <span class="keycard_shell__ag_update_step-description">You can find Keycard Shell produced units list on the <a href="https://github.com/keycard-tech/shell-units/releases" class="keycard_shell__page-top-help-link" target="_blank">official GitHub repository</a>, or download the latest list below.</span>
+        </div>
+        <div class="keycard_shell__btn-container keycard_shell__btn-ag-container">
+            <a href="https://github.com/keycard-tech/shell-units/releases" class="keycard_shell__btn keycard_shell__btn-ag" id="download-units" target="_blank">
+                <img src="{% static 'keycard_shell/img/download.svg' %}" alt="Download" width="20px" height="20px">
+                <span id="download-units-label">Download produced units list</span>
+            </a>
+        </div>
+        <div class="keycard_shell__ag_hash_check_container">
+            <span class="keycard_shell__ag_hash_check_text"> Check the integrity using SHA256 checksum.</span>
+            <div class="keycard_shell__ag_hash_container">
+                <span class="keycard_shell__ag_hash_check_text keycard_shell__ag_hash-label">•&nbsp; SHA256:</span>
+                <span class="keycard_shell__ag_hash" id="units-hash"></span>
+            </div>
+            <span class="keycard_shell__ag_hash_check_text">
+                Copy the units file to the same USB drive.
+            </span>
+        </div>
+    </div>
+    <div class="keycard_shell__ag_update_step">
+        <div class="keycard_shell__ag_update_step-head-container">
+            <h3 class="keycard_shell__ag_update_step-heading">3.&nbsp; Prepare offline device</h3>
+            <span class="keycard_shell__ag_update_step-description">Install a clean OS on an empty hard drive or external boot disk. This could be:</span>
+            <ul class="keycard_shell__ag-list"> 
+                <li class="keycard_shell__ag_update_step-description keycard_shell__ag-list-element">Your current machine (dual-boot or temp clean install)</li>
+                <li class="keycard_shell__ag_update_step-description keycard_shell__ag-list-element">A secondary dedicated device</li>
+            </ul>
+            <span class="keycard_shell__ag_update_step-description">Ensure it’s fully offline. Disconnect all other drives and physically disable Wi-Fi/Bluetooth if possible.</span>
+            <span class="keycard_shell__ag_update_step-description">Unlike an update, a verification also needs a working camera on that machine — it reads the answer your Shell shows on its screen.</span>
+        </div>
+    </div>
+    <div class="keycard_shell__ag_update_step">
+        <div class="keycard_shell__ag_update_step-head-container">
+            <h3 class="keycard_shell__ag_update_step-heading">4.&nbsp; Run standalone app and pick the units file</h3>
+            <span class="keycard_shell__ag_update_step-description">
+                Boot your offline machine and launch the app. <br>
+                Choose "Verify Shell authenticity", set the units list to "From file", and pick the file off the USB drive.
+            </span>
+        </div>
+        <div class="keycard_shell__ag_shots">
+            <figure class="keycard_shell__ag_shot">
+                <img class="keycard_shell__ag_shot-img" src="{% static 'keycard_shell/img/updater_verify.webp' %}" alt="The verify screen of the updater: on the left its three steps, the units list switch and the Enable camera button, on the right the QR code the Shell scans" width="1929" height="1554" loading="lazy">
+                <figcaption class="keycard_shell__ag_shot-caption">Left: the units-list switch under the three steps — with "From file" the app reads the list off the USB drive instead of fetching one, and its camera stays off until enabled. Right: the challenge your Shell scans, and the answer the Shell shows, which you scan back.</figcaption>
+            </figure>
+        </div>
+    </div>
+    <div class="keycard_shell__ag_update_step">
+        <div class="keycard_shell__ag_update_step-head-container">
+            <h3 class="keycard_shell__ag_update_step-heading">5.&nbsp; Scan the challenge, then the answer</h3>
+            <span class="keycard_shell__ag_update_step-description">
+                Go to <span class="keycard_shell__bold">Settings/Shell/Verify</span> on the Shell and scan the code on the screen. <br>
+                The Shell answers with a QR code of its own — scan it with the camera you just enabled.
+            </span>
+        </div>
+        <span class="keycard_shell__ag_update_step-description">The challenge is made on the spot, so a response cannot have been recorded earlier. Nothing left either machine: the list, the challenge and the answer stayed on the two devices in front of you.</span>
+    </div>
+</div>
+<script type="module" src="{% static '/keycard_shell/js/air_gapped_verify.js' %}"></script>
+{% endblock %}
