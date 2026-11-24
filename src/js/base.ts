@@ -1,3 +1,5 @@
+import "./consent";
+
 const menu = document.getElementById("menu-fixed") as HTMLDivElement;
 const buyBtn = document.getElementById("menu-keycard-buy-btn") as HTMLButtonElement;
 const mobileBuyBtn = document.getElementById("mobile-menu-keycard-buy-btn") as HTMLButtonElement;

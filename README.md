@@ -28,3 +28,11 @@ entry matches it, and the response could not be checked at all.
 [Air-gapped verification](https://shell.keycard.tech/verify/air-gapped) hands the same
 check to the stand-alone app on a machine that never connects: this page gives out the app and the newest
 produced units list.
+
+## Analytics and consent
+
+Every page carries the Google tag `G-YLHJYKZLH6` in its `<head>` (`templates/base.html`). Consent Mode starts with
+`ad_storage`, `ad_user_data`, `ad_personalization` and `analytics_storage` all denied. The cookie banner
+(`templates/consent_banner.html`, `src/js/consent.ts`) asks on a first visit and sends `gtag('consent', 'update', …)` when the visitor
+accepts or declines. The choice is kept in `localStorage` under `keycard_shell_consent`, applied again in `<head>` before the tag
+configures on later visits, and can be changed from Cookie settings in the footer.
