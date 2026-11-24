@@ -8,7 +8,6 @@ import { PAGES } from "../scripts/site.mjs";
 const read = (path: string): string => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
 const BASE = read("templates/base.html");
-const BANNER = read("templates/consent_banner.html");
 const FOOTER = read("templates/footer.html");
 const SCRIPT = read("src/js/consent.ts");
 
@@ -36,28 +35,28 @@ test("all four signals default to denied before the tag is configured or loaded"
   for (const signal of SIGNALS) assert.match(block, new RegExp(`${signal}: 'denied'`), `${signal} does not default to denied`);
 });
 
-test("the head script and the banner script read and write the same stored choice", () => {
-  const key = SCRIPT.match(/STORAGE_KEY = "([^"]+)"/)?.[1];
-
-  assert.ok(key, "no storage key in consent.ts");
-  assert.ok(BASE.includes(`localStorage.getItem('${key}') === 'granted'`), "base.html reads another key than consent.ts writes");
+test("the banner's events reach Google through a consent update, and are listened for before the banner loads", () => {
+  assert.match(BASE, /addEventListener\('visitorConsentCollected'/);
+  assert.match(BASE, /addEventListener\('consentTrackingApiLoaded'/);
+  assert.match(BASE, /analytics_storage: analytics \? 'granted' : 'denied'/);
+  assert.match(BASE, /ad_storage: marketing \? 'granted' : 'denied'/);
+  assert.match(BASE, /ad_user_data: marketing/);
+  assert.match(BASE, /ad_personalization: marketing/);
+  assert.ok(!BASE.includes("storefront-banner.js"), "the banner must be loaded by consent.ts, after the listeners above");
 });
 
-test("accepting and declining both update every signal", () => {
-  for (const signal of SIGNALS) assert.match(SCRIPT, new RegExp(`${signal}: choice`), `${signal} is not updated`);
-  assert.match(SCRIPT, /choose\("granted"\)/);
-  assert.match(SCRIPT, /choose\("denied"\)/);
+// A choice kept anywhere but the shared cookie would ask a visitor again on every keycard.tech site
+test("the banner is configured for the whole keycard.tech domain, like docs", () => {
+  assert.match(SCRIPT, /storefrontRootDomain: "keycard\.tech"/);
+  assert.match(SCRIPT, /checkoutRootDomain: "getmykeycard\.myshopify\.com"/);
+  assert.match(SCRIPT, /headlessStorefront: true/);
+  assert.ok(!/localStorage|document\.cookie/.test(SCRIPT + BASE), "a second place keeps the choice");
 });
 
 test("every element the banner script reaches for is in the markup", () => {
-  const ids = new Set([...(BANNER + FOOTER).matchAll(/id="([^"]+)"/g)].map((match) => match[1]));
+  const ids = new Set([...FOOTER.matchAll(/id="([^"]+)"/g)].map((match) => match[1]));
   const wanted = [...SCRIPT.matchAll(/getElementById\("([^"]+)"\)/g)].map((match) => match[1]);
 
   assert.deepEqual(wanted.filter((id) => !ids.has(id)), []);
-  assert.ok(wanted.length === 4, "the banner is expected to reach for the banner, two buttons and the footer entry");
-});
-
-// Without JS the banner can not be answered, so it must not cover the page until the script has decided to show it
-test("the banner starts hidden", () => {
-  assert.match(BANNER, /id="consent-banner"[^>]*\shidden>/);
+  assert.equal(wanted.length, 1, "the footer entry is the only element consent.ts reaches for");
 });

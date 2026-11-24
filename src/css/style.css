@@ -2859,92 +2859,13 @@ body {
 .keycard_shell__fw-version-content, .keycard_shell__db-version-heading { font-weight: 700; letter-spacing: -0.03em; }
 .keycard_shell__mobile-menu-element-link, .keycard-shell__mobile_submenu-element-link { font-weight: 600; letter-spacing: -0.02em; }
 
-/* Cookie banner */
-.keycard_shell__consent {
-    position: fixed;
-    left: 16px;
-    right: 16px;
-    bottom: 16px;
-    z-index: 1000;
-    max-width: 480px;
-    box-sizing: border-box;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    background: var(--dark-80);
-    border: solid 1px var(--white-12);
-    border-radius: var(--border-radius-20);
-    -webkit-backdrop-filter: blur(var(--background-blur));
-    backdrop-filter: blur(var(--background-blur));
-    font-family: var(--text-font-inter);
-    color: var(--white-95);
-}
-
-.keycard_shell__consent[hidden] {
-    display: none;
-}
-
-.keycard_shell__consent:focus {
-    outline: none;
-}
-
-.keycard_shell__consent-title {
-    font-size: var(--text-16);
-    font-weight: var(--text-font-weight-500);
-    line-height: var(--text-line-height);
-}
-
-.keycard_shell__consent-text {
-    font-size: var(--text-14);
-    line-height: var(--text-line-height-20);
-    color: var(--white-80);
-}
-
-.keycard_shell__consent-link {
-    color: var(--white-95);
-    text-decoration: underline;
-}
-
-.keycard_shell__consent-actions {
-    display: flex;
-    gap: 8px;
-    justify-content: flex-end;
-}
-
-.keycard_shell__consent-button {
-    padding: 8px 16px;
-    border: solid 1px var(--white-12);
-    border-radius: var(--border-radius-12);
-    background: var(--white-8);
-    font-family: var(--text-font-inter);
-    font-size: var(--text-14);
-    font-weight: var(--text-font-weight-500);
-    color: var(--white-95);
-    cursor: pointer;
-}
-
-.keycard_shell__consent-button:hover {
-    background: var(--white-12);
-}
-
-.keycard_shell__consent-button-primary {
-    background: var(--orange);
-}
-
-.keycard_shell__consent-button-primary:hover {
-    background: var(--orange);
-    opacity: 0.9;
-}
-
-.keycard_shell__consent-button:focus-visible,
-.keycard_shell__cookie-settings:focus-visible,
-.keycard_shell__consent-link:focus-visible {
+/* Cookie settings */
+.keycard_shell__cookie-settings:focus-visible {
     outline: 2px solid var(--white-95);
     outline-offset: 2px;
 }
 
-/* The footer entry that reopens the banner is a button that reads like its sibling links */
+/* The footer entry that reopens the Shopify privacy banner is a button that reads like its sibling links */
 .keycard_shell__cookie-settings {
     padding: 0;
     border: none;
@@ -2954,12 +2875,4 @@ body {
     letter-spacing: inherit;
     text-align: left;
     cursor: pointer;
-}
-
-@media (min-width: 960px) {
-    .keycard_shell__consent {
-        left: 24px;
-        right: auto;
-        bottom: 24px;
-    }
 }

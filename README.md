@@ -32,7 +32,10 @@ produced units list.
 ## Analytics and consent
 
 Every page carries the Google tag `G-YLHJYKZLH6` in its `<head>` (`templates/base.html`). Consent Mode starts with
-`ad_storage`, `ad_user_data`, `ad_personalization` and `analytics_storage` all denied. The cookie banner
-(`templates/consent_banner.html`, `src/js/consent.ts`) asks on a first visit and sends `gtag('consent', 'update', …)` when the visitor
-accepts or declines. The choice is kept in `localStorage` under `keycard_shell_consent`, applied again in `<head>` before the tag
-configures on later visits, and can be changed from Cookie settings in the footer.
+`ad_storage`, `ad_user_data`, `ad_personalization` and `analytics_storage` all denied.
+
+The cookie banner is the Shopify privacy banner that docs.keycard.tech and the store use (`src/js/consent.ts`, configured with
+`storefrontRootDomain: "keycard.tech"`), so a visitor answers once for every keycard.tech site: Shopify keeps the choice in the
+`_tracking_consent` cookie on keycard.tech. The banner does not talk to Google, so `templates/base.html` listens for its
+`visitorConsentCollected` and `consentTrackingApiLoaded` events and sends `gtag('consent', 'update', …)`. Cookie settings in the
+footer reopens the banner. docs.keycard.tech does the same, in `src/app/layout.tsx` of keycard-tech/keycard-website.
